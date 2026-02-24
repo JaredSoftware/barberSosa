@@ -1,0 +1,26 @@
+# Un solo contenedor: PM2 + 1 backend que sirve ambos frontends (ecommerce + admin)
+FROM node:20-alpine
+WORKDIR /app
+RUN npm install -g pm2
+
+# Dependencias backend único
+COPY barber-backend/package.json barber-backend/package-lock.json ./barber-backend/
+RUN cd barber-backend && npm ci
+
+# Dependencias frontend ecommerce
+COPY barberEcommerce/package.json barberEcommerce/package-lock.json ./barberEcommerce/
+RUN cd barberEcommerce && npm ci --ignore-scripts || echo "⚠️  barberEcommerce no tiene package.json aún"
+
+# Código (en runtime los volúmenes lo sobrescriben)
+COPY barber-backend ./barber-backend
+COPY barberEcommerce ./barberEcommerce
+
+# Build frontend (genera archivos estáticos en .output/public y los copia a barber-backend/public)
+RUN cd barberEcommerce && npm run generate
+COPY ecosystem.config.js ./
+COPY docker-entrypoint.pm2.sh /docker-entrypoint.pm2.sh
+RUN chmod +x /docker-entrypoint.pm2.sh
+
+EXPOSE 4000
+ENTRYPOINT ["/docker-entrypoint.pm2.sh"]
+CMD ["pm2-runtime", "start", "ecosystem.config.js"]

@@ -1,0 +1,88 @@
+# Barber: MongoDB + un contenedor con PM2 (backend + frontend). Volúmenes = cambios al instante.
+# Uso: docker compose up -d
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: barber-mongodb
+    restart: unless-stopped
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_DATABASE: sosabarber
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: barber-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.barber
+    container_name: barber-app
+    restart: unless-stopped
+    expose:
+      - "4000"
+    env_file:
+      - ./barber-backend/.env
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongodb:27017/sosabarber
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-prod}
+      JWT_EXPIRES_IN: 7d
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-http://localhost/auth/google/callback}
+      FRONTEND_CALLBACK_URL: ${FRONTEND_CALLBACK_URL:-http://localhost}
+      FRONTEND_URLS: http://localhost,http://localhost/admin
+    volumes:
+      # Backend: proyecto completo (incl. node_modules) para que ioredis/redis estén disponibles
+      - ./barber-backend:/app/barber-backend
+      # Frontend ecommerce (incluye panel admin en /admin)
+      - ./barberEcommerce:/app/barberEcommerce
+      - barberEcommerce_node_modules:/app/barberEcommerce/node_modules
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    container_name: barber-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    networks:
+      - default
+
+volumes:
+  mongodb_data:
+  redis_data:
+  barberEcommerce_node_modules:

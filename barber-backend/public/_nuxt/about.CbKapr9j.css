@@ -1,0 +1,1 @@
+:root{--primary-gold:#f4c025;--deep-black:#050505}.gold-gradient-text{background:linear-gradient(135deg,#f4c025,#d4a017 50%,#f4c025);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 1px rgba(244,192,37,.3))}.metallic-border{border:1px solid #333}.gold-border{border:1px solid #f4c025}body{background-color:#0a0a0a;font-family:Newsreader,serif}

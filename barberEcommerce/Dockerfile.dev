@@ -1,0 +1,13 @@
+# Nuxt - desarrollo con hot reload
+FROM node:20-alpine
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci --ignore-scripts
+COPY . .
+COPY docker-entrypoint.dev.sh /docker-entrypoint.dev.sh
+RUN chmod +x /docker-entrypoint.dev.sh
+EXPOSE 3000
+ENV NUXT_HOST=0.0.0.0
+ENV NUXT_PORT=3000
+ENTRYPOINT ["/docker-entrypoint.dev.sh"]
+CMD ["npm", "run", "dev"]

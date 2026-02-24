@@ -1,0 +1,12 @@
+# Build PM2 (contexto: raíz cv)
+barber/node_modules
+barber/.nuxt
+barber/.output
+barber-backend/node_modules
+barber-backend/dist
+.git
+cry
+frontend
+*.md
+docker-compose*.yml
+DOCKER.md
