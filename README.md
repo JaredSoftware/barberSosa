@@ -1,5 +1,13 @@
 ## Barber Sosa – Backend + Ecommerce
 
+Aplicación completa para gestionar la barbería **Barber Sosa**:
+
+- Sitio público con reservas online, catálogo y carrito de compras.
+- Panel de administración para barberos, agenda, productos y reportes.
+- Integración con **Google Calendar**, **Google OAuth** y **Mercado Pago**.
+
+Esta sección resume la arquitectura y cómo levantar el proyecto en local.
+
 Proyecto full‑stack para la barbería **Barber Sosa**, compuesto por:
 
 - **`barber-backend`**: API y backend en **NestJS** con MongoDB/Mongoose, autenticación JWT/Google OAuth, integración con **Google Calendar** para reservas y **Mercado Pago** para pagos.
